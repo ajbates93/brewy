@@ -92,20 +92,103 @@ class BrewyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const BrewyHomePage(),
+      home: const BrewyNavScaffold(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class BrewyHomePage extends StatefulWidget {
-  const BrewyHomePage({super.key});
+class BrewyNavScaffold extends StatefulWidget {
+  const BrewyNavScaffold({super.key});
 
   @override
-  State<BrewyHomePage> createState() => _BrewyHomePageState();
+  State<BrewyNavScaffold> createState() => _BrewyNavScaffoldState();
 }
 
-class _BrewyHomePageState extends State<BrewyHomePage> {
+class _BrewyNavScaffoldState extends State<BrewyNavScaffold> {
+  int _selectedIndex = 1; // Default to Brew page
+
+  final List<Widget> _pages = [
+    const RecipesPage(),
+    const BrewPage(),
+    const ProfilePage(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        backgroundColor: const Color(0xFF18181B),
+        indicatorColor: Colors.white10,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'Recipes',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.coffee_outlined),
+            selectedIcon: Icon(Icons.coffee),
+            label: 'Brew',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// --- Recipes Page ---
+class RecipesPage extends StatelessWidget {
+  const RecipesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Recipes',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            fontSize: 28,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: Text(
+          'Your recipes will appear here.',
+          style: TextStyle(color: Colors.white54, fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+// --- Brew Page (moved timer/stepper here) ---
+class BrewPage extends StatefulWidget {
+  const BrewPage({super.key});
+
+  @override
+  State<BrewPage> createState() => _BrewPageState();
+}
+
+class _BrewPageState extends State<BrewPage> {
   Timer? _timer;
   int _seconds = 0;
   bool _isRunning = false;
@@ -163,7 +246,6 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
   }
 
   RecipeStep? getCurrentStep() {
-    // Prioritize the most recently started step for overlapping times
     RecipeStep? current;
     for (final step in recipe.steps) {
       if (step.isInRange(_seconds)) {
@@ -172,7 +254,6 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
         }
       }
     }
-    // If after last step, just show last
     if (current == null && _seconds > recipe.steps.last.endSeconds)
       return recipe.steps.last;
     return current ?? recipe.steps.first;
@@ -180,7 +261,6 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
 
   RecipeStep? getNextStep() {
     final now = _seconds;
-    // Find the next step that starts after now
     final futureSteps = recipe.steps
         .where((s) => s.startSeconds > now)
         .toList();
@@ -216,7 +296,6 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Intro step if timer not started
             if (_seconds == 0 && !_isRunning) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 32.0),
@@ -246,7 +325,6 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
                 ),
               ),
             ] else ...[
-              // Current step
               if (currentStep != null) ...[
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
@@ -263,12 +341,10 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
                 const SizedBox(height: 24),
               ],
             ],
-            // Timer display
             GestureDetector(
               onTap: _toggleTimer,
               child: Container(
-                width:
-                    340, // Fixed width for timer box (fits '99:59' in large font)
+                width: 340,
                 padding: const EdgeInsets.all(48),
                 decoration: BoxDecoration(
                   color: secondary,
@@ -293,7 +369,6 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
                 ),
               ),
             ),
-            // Up next section (now below timer)
             if (nextStep != null) ...[
               Padding(
                 padding: const EdgeInsets.only(top: 24.0, bottom: 24.0),
@@ -389,6 +464,37 @@ class _BrewyHomePageState extends State<BrewyHomePage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- Profile Page ---
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Profile',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            fontSize: 28,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: Text(
+          'Your profile and settings will appear here.',
+          style: TextStyle(color: Colors.white54, fontSize: 18),
         ),
       ),
     );
