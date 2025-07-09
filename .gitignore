@@ -43,3 +43,39 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# --- Flutter Platform-specific ---
+# iOS/macOS
+ios/Pods/
+ios/Podfile.lock
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+macos/Pods/
+macos/Podfile.lock
+macos/Flutter/ephemeral/
+macos/Runner.xcworkspace/
+macos/Runner.xcodeproj/xcuserdata/
+macos/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+macos/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/captures/
+android/.cxx/
+android/key.properties
+android/**/*.keystore
+android/**/*.jks
+
+# Windows/Linux
+ywindows/flutter/ephemeral/
+linux/flutter/ephemeral/
