@@ -36,4 +36,11 @@ class RecipeDetailViewModel extends ChangeNotifier {
     await _repo.deleteStep(stepId);
     await loadRecipe(_recipe!.id!);
   }
+
+  Future<void> updateRecipe(Recipe recipe) async {
+    await _repo.updateRecipe(recipe);
+    if (recipe.id != null) {
+      await loadRecipe(recipe.id!);
+    }
+  }
 }
