@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import 'presentation/pages/recipes_page.dart';
 
 void main() {
   runApp(const BrewyApp());
@@ -144,37 +145,6 @@ class _BrewyNavScaffoldState extends State<BrewyNavScaffold> {
             label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-}
-
-// --- Recipes Page ---
-class RecipesPage extends StatelessWidget {
-  const RecipesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'Recipes',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            fontSize: 28,
-            color: Colors.white,
-            letterSpacing: 1.2,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Text(
-          'Your recipes will appear here.',
-          style: TextStyle(color: Colors.white54, fontSize: 18),
-        ),
       ),
     );
   }
