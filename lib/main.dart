@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import 'presentation/pages/recipes_page.dart';
 import 'presentation/pages/brew_page.dart';
+import 'presentation/pages/profile_page.dart';
+import 'presentation/viewmodels/profile_viewmodel.dart';
+import 'data/repositories/profile_repository_impl.dart';
+import 'data/dao/profile_dao.dart';
+import 'data/datasources/database_helper.dart';
 
 void main() {
   runApp(const BrewyApp());
@@ -80,22 +86,39 @@ class BrewyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Brewy',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF18181B),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.white,
+    return MultiProvider(
+      providers: [
+        // Database and DAOs
+        Provider<DatabaseHelper>(create: (_) => DatabaseHelper()),
+
+        // Repositories and ViewModels
+        FutureProvider<ProfileViewModel?>(
+          create: (context) async {
+            final dbHelper = context.read<DatabaseHelper>();
+            final profileDao = await dbHelper.getProfileDao();
+            final repository = ProfileRepositoryImpl(profileDao);
+            return ProfileViewModel(repository);
+          },
+          initialData: null,
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Brewy',
+        theme: ThemeData(
           brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFF18181B),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.white,
+            brightness: Brightness.dark,
+          ),
+          textTheme: GoogleFonts.interTextTheme(
+            ThemeData(brightness: Brightness.dark).textTheme,
+          ),
+          useMaterial3: true,
         ),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData(brightness: Brightness.dark).textTheme,
-        ),
-        useMaterial3: true,
+        home: const BrewyNavScaffold(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: const BrewyNavScaffold(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -146,37 +169,6 @@ class _BrewyNavScaffoldState extends State<BrewyNavScaffold> {
             label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-}
-
-// --- Profile Page ---
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'Profile',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            fontSize: 28,
-            color: Colors.white,
-            letterSpacing: 1.2,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Text(
-          'Your profile and settings will appear here.',
-          style: TextStyle(color: Colors.white54, fontSize: 18),
-        ),
       ),
     );
   }

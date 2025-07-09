@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../dao/profile_dao.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -17,7 +18,25 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'brewy.db');
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE profiles (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          bio TEXT,
+          profile_pic_path TEXT
+        )
+      ''');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -38,10 +57,23 @@ class DatabaseHelper {
         FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE
       )
     ''');
+    await db.execute('''
+      CREATE TABLE profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        bio TEXT,
+        profile_pic_path TEXT
+      )
+    ''');
   }
 
   Future<void> close() async {
     final db = await database;
     db.close();
+  }
+
+  Future<ProfileDao> getProfileDao() async {
+    final db = await database;
+    return ProfileDao(db);
   }
 }
