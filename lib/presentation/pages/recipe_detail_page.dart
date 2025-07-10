@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../domain/entities/recipe.dart';
 import '../../domain/entities/recipe_step.dart';
 import '../viewmodels/recipe_detail_viewmodel.dart';
 
@@ -58,15 +57,28 @@ class RecipeDetailPage extends StatelessWidget {
                               child: _EditRecipeForm(
                                 initialName: recipe.name,
                                 initialDescription: recipe.description,
-                                onSave: (name, description) async {
-                                  await viewModel.updateRecipe(
-                                    recipe.copyWith(
-                                      name: name,
-                                      description: description,
-                                    ),
-                                  );
-                                  Navigator.of(context).pop();
-                                },
+                                initialCoffeeAmount: recipe.coffeeAmount,
+                                initialWaterAmount: recipe.waterAmount,
+                                initialUseMl: recipe.useMl,
+                                onSave:
+                                    (
+                                      name,
+                                      description,
+                                      coffeeAmount,
+                                      waterAmount,
+                                      useMl,
+                                    ) async {
+                                      await viewModel.updateRecipe(
+                                        recipe.copyWith(
+                                          name: name,
+                                          description: description,
+                                          coffeeAmount: coffeeAmount,
+                                          waterAmount: waterAmount,
+                                          useMl: useMl,
+                                        ),
+                                      );
+                                      Navigator.of(context).pop();
+                                    },
                               ),
                             ),
                           );
@@ -100,6 +112,102 @@ class RecipeDetailPage extends StatelessWidget {
                               ),
                             ),
                           ),
+
+                        // Coffee and Water Amounts Section
+                        if (recipe.coffeeAmount != null ||
+                            recipe.waterAmount != null)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16.0),
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.coffee,
+                                      color: Colors.orange[300],
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Recipe Amounts',
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _AmountCard(
+                                        label: 'Coffee',
+                                        amount: recipe.coffeeAmount,
+                                        unit: recipe.unit,
+                                        icon: Icons.coffee,
+                                        color: Colors.orange[300]!,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _AmountCard(
+                                        label: 'Water',
+                                        amount: recipe.waterAmount,
+                                        unit: recipe.unit,
+                                        icon: Icons.water_drop,
+                                        color: Colors.blue[300]!,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (recipe.coffeeToWaterRatio != null) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.analytics,
+                                          color: Colors.green[300],
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Ratio: 1:${recipe.coffeeToWaterRatio!.toStringAsFixed(1)}',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+
                         Text(
                           'Steps',
                           style: GoogleFonts.inter(
@@ -485,10 +593,23 @@ class _AddStepFormState extends State<_AddStepForm> {
 class _EditRecipeForm extends StatefulWidget {
   final String initialName;
   final String? initialDescription;
-  final Future<void> Function(String name, String? description) onSave;
+  final double? initialCoffeeAmount;
+  final double? initialWaterAmount;
+  final bool initialUseMl;
+  final Future<void> Function(
+    String name,
+    String? description,
+    double? coffeeAmount,
+    double? waterAmount,
+    bool useMl,
+  )
+  onSave;
   const _EditRecipeForm({
     required this.initialName,
     this.initialDescription,
+    this.initialCoffeeAmount,
+    this.initialWaterAmount,
+    this.initialUseMl = false,
     required this.onSave,
   });
 
@@ -500,6 +621,9 @@ class _EditRecipeFormState extends State<_EditRecipeForm> {
   final _formKey = GlobalKey<FormState>();
   late String _name;
   String? _description;
+  double? _coffeeAmount;
+  double? _waterAmount;
+  bool _useMl = false;
   bool _isSubmitting = false;
 
   @override
@@ -507,6 +631,9 @@ class _EditRecipeFormState extends State<_EditRecipeForm> {
     super.initState();
     _name = widget.initialName;
     _description = widget.initialDescription;
+    _coffeeAmount = widget.initialCoffeeAmount;
+    _waterAmount = widget.initialWaterAmount;
+    _useMl = widget.initialUseMl;
   }
 
   @override
@@ -557,6 +684,99 @@ class _EditRecipeFormState extends State<_EditRecipeForm> {
             style: const TextStyle(color: Colors.white),
             onChanged: (value) => setState(() => _description = value),
           ),
+          const SizedBox(height: 16),
+
+          // Unit Toggle
+          Row(
+            children: [
+              Text(
+                'Unit: ',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(width: 16),
+              ChoiceChip(
+                label: const Text('Grams'),
+                selected: !_useMl,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() => _useMl = false);
+                  }
+                },
+                selectedColor: Colors.white,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                labelStyle: TextStyle(
+                  color: !_useMl ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: const Text('ml'),
+                selected: _useMl,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() => _useMl = true);
+                  }
+                },
+                selectedColor: Colors.white,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                labelStyle: TextStyle(
+                  color: _useMl ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Coffee Amount
+          TextFormField(
+            initialValue: _coffeeAmount?.toString(),
+            decoration: InputDecoration(
+              labelText: 'Coffee Amount (${_useMl ? 'ml' : 'g'})',
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: const OutlineInputBorder(),
+              focusedBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              prefixIcon: Icon(
+                Icons.coffee,
+                color: Colors.orange[300],
+                size: 20,
+              ),
+            ),
+            style: const TextStyle(color: Colors.white),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (value) {
+              final amount = double.tryParse(value);
+              setState(() => _coffeeAmount = amount);
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Water Amount
+          TextFormField(
+            initialValue: _waterAmount?.toString(),
+            decoration: InputDecoration(
+              labelText: 'Water Amount (${_useMl ? 'ml' : 'g'})',
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: const OutlineInputBorder(),
+              focusedBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              prefixIcon: Icon(
+                Icons.water_drop,
+                color: Colors.blue[300],
+                size: 20,
+              ),
+            ),
+            style: const TextStyle(color: Colors.white),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (value) {
+              final amount = double.tryParse(value);
+              setState(() => _waterAmount = amount);
+            },
+          ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _isSubmitting
@@ -570,6 +790,9 @@ class _EditRecipeFormState extends State<_EditRecipeForm> {
                           _description?.trim().isEmpty ?? true
                               ? null
                               : _description?.trim(),
+                          _coffeeAmount,
+                          _waterAmount,
+                          _useMl,
                         );
                       } catch (e) {
                         if (context.mounted) {
@@ -795,6 +1018,62 @@ class _EditStepFormState extends State<_EditStepForm> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Text('Save Changes'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AmountCard extends StatelessWidget {
+  final String label;
+  final double? amount;
+  final String unit;
+  final IconData icon;
+  final Color color;
+
+  const _AmountCard({
+    required this.label,
+    required this.amount,
+    required this.unit,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            amount != null ? '${amount!.toStringAsFixed(1)} $unit' : '—',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

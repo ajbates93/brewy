@@ -17,7 +17,13 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<int> addRecipe(Recipe recipe) async {
     return await recipeDao.insertRecipe(
-      RecipeModel(name: recipe.name, description: recipe.description),
+      RecipeModel(
+        name: recipe.name,
+        description: recipe.description,
+        coffeeAmount: recipe.coffeeAmount,
+        waterAmount: recipe.waterAmount,
+        useMl: recipe.useMl,
+      ),
     );
   }
 
@@ -38,6 +44,9 @@ class RecipeRepositoryImpl implements RecipeRepository {
         id: recipe.id,
         name: recipe.name,
         description: recipe.description,
+        coffeeAmount: recipe.coffeeAmount,
+        waterAmount: recipe.waterAmount,
+        useMl: recipe.useMl,
       ),
     );
   }

@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, 'brewy.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -37,6 +37,15 @@ class DatabaseHelper {
         )
       ''');
     }
+
+    if (oldVersion < 3) {
+      // Add new columns to recipes table
+      await db.execute('ALTER TABLE recipes ADD COLUMN coffee_amount REAL');
+      await db.execute('ALTER TABLE recipes ADD COLUMN water_amount REAL');
+      await db.execute(
+        'ALTER TABLE recipes ADD COLUMN use_ml INTEGER DEFAULT 0',
+      );
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -44,7 +53,10 @@ class DatabaseHelper {
       CREATE TABLE recipes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        description TEXT
+        description TEXT,
+        coffee_amount REAL,
+        water_amount REAL,
+        use_ml INTEGER DEFAULT 0
       )
     ''');
     await db.execute('''

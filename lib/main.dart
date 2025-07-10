@@ -97,7 +97,10 @@ class BrewyApp extends StatelessWidget {
             final dbHelper = context.read<DatabaseHelper>();
             final profileDao = await dbHelper.getProfileDao();
             final repository = ProfileRepositoryImpl(profileDao);
-            return ProfileViewModel(repository);
+            final viewModel = ProfileViewModel(repository);
+            // Load the profile immediately after creation
+            await viewModel.loadProfile();
+            return viewModel;
           },
           initialData: null,
         ),

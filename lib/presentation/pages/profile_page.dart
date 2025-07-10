@@ -16,12 +16,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final viewModel = context.read<ProfileViewModel?>();
-      if (viewModel != null) {
-        viewModel.loadProfile();
-      }
-    });
   }
 
   Future<void> _editProfile() async {
@@ -70,180 +64,189 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<ProfileViewModel?>(context);
-    if (viewModel == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'Profile',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            fontSize: 28,
-            color: Colors.white,
-            letterSpacing: 1.2,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white70),
-            onPressed: (viewModel.isLoading) ? null : _editProfile,
-            tooltip: 'Edit Profile',
-          ),
-        ],
-      ),
-      body: Builder(
-        builder: (context) {
-          if (viewModel.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            );
-          }
+    return Consumer<ProfileViewModel?>(
+      builder: (context, viewModel, child) {
+        if (viewModel == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          if (viewModel.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Error loading profile',
-                    style: GoogleFonts.inter(color: Colors.white70),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: viewModel.loadProfile,
-                    child: const Text('Retry'),
-                  ),
-                ],
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'Profile',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.bold,
+                fontSize: 28,
+                color: Colors.white,
+                letterSpacing: 1.2,
               ),
-            );
-          }
+            ),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.white70),
+                onPressed: (viewModel.isLoading) ? null : _editProfile,
+                tooltip: 'Edit Profile',
+              ),
+            ],
+          ),
+          body: Builder(
+            builder: (context) {
+              if (viewModel.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
 
-          final profile = viewModel.profile;
-          final name = (profile?.name != null && profile!.name!.isNotEmpty)
-              ? profile.name!
-              : 'No name set';
-          final bio = (profile?.bio != null && profile!.bio!.isNotEmpty)
-              ? profile.bio!
-              : 'No bio set';
+              if (viewModel.error != null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Error loading profile',
+                        style: GoogleFonts.inter(color: Colors.white70),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: viewModel.loadProfile,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Stack(
-                  alignment: Alignment.bottomRight,
+              final profile = viewModel.profile;
+              final name = (profile?.name != null && profile!.name!.isNotEmpty)
+                  ? profile.name!
+                  : 'No name set';
+              final bio = (profile?.bio != null && profile!.bio!.isNotEmpty)
+                  ? profile.bio!
+                  : 'No bio set';
+
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 56,
-                      backgroundColor: Colors.white12,
-                      backgroundImage: profile?.profilePicPath != null
-                          ? FileImage(File(profile!.profilePicPath!))
-                          : null,
-                      child: profile?.profilePicPath == null
-                          ? const Icon(
-                              Icons.person,
-                              size: 56,
-                              color: Colors.white38,
-                            )
-                          : null,
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 56,
+                          backgroundColor: Colors.white12,
+                          backgroundImage: profile?.profilePicPath != null
+                              ? FileImage(File(profile!.profilePicPath!))
+                              : null,
+                          child: profile?.profilePicPath == null
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 56,
+                                  color: Colors.white38,
+                                )
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                            ),
+                            onPressed: _editProfilePic,
+                            tooltip: 'Change Profile Picture',
+                          ),
+                        ),
+                      ],
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: const Icon(Icons.camera_alt, color: Colors.white),
-                        onPressed: _editProfilePic,
-                        tooltip: 'Change Profile Picture',
+                    const SizedBox(height: 32),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white12,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    name,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Name',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white12,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    bio,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Bio',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 32),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white12,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                name,
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Name',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.white70,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white12,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                bio,
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Bio',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.white70,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
