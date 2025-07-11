@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.brewy">
+    package="com.alexbates.brewy">
 
     <!-- Permissions for image_picker -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <application
-        android:label="brewy"
+        android:label="Brewy"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -60,6 +60,55 @@ class _BrewPageState extends State<BrewPage> {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
+  Widget _buildNoRecipesView(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.coffee_outlined,
+              size: 80,
+              color: Colors.white.withOpacity(0.6),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No Recipes Found',
+              style: GoogleFonts.inter(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'You need to create a recipe before you can start brewing.',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Tap "Recipes" at the bottom to create your first recipe.',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: Colors.white54,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -163,8 +212,10 @@ class _BrewPageState extends State<BrewPage> {
                     ),
               centerTitle: true,
             ),
-            body: viewModel.isLoading || recipe == null
+            body: viewModel.isLoading
                 ? const Center(child: CircularProgressIndicator())
+                : recipe == null
+                ? _buildNoRecipesView(context)
                 : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

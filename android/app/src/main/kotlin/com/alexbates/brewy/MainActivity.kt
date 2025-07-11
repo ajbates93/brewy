@@ -1,4 +1,4 @@
-package com.example.brewy
+package com.alexbates.brewy
 
 import io.flutter.embedding.android.FlutterActivity
 
