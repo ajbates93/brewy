@@ -21,10 +21,11 @@ class BrewViewModel extends ChangeNotifier {
     _recipes = await _repo.getAllRecipes();
     if (_recipes.isNotEmpty) {
       if (selectRecipeId != null) {
-        _selectedRecipe = _recipes.firstWhere(
-          (r) => r.id == selectRecipeId,
-          orElse: () => _recipes.first,
-        );
+        try {
+          _selectedRecipe = _recipes.firstWhere((r) => r.id == selectRecipeId);
+        } catch (e) {
+          _selectedRecipe = _recipes.first;
+        }
       } else {
         _selectedRecipe ??= _recipes.first;
       }
@@ -35,6 +36,15 @@ class BrewViewModel extends ChangeNotifier {
     }
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> refreshRecipes() async {
+    if (_selectedRecipe != null) {
+      final selectedId = _selectedRecipe!.id;
+      await loadRecipes(selectRecipeId: selectedId);
+    } else {
+      await loadRecipes();
+    }
   }
 
   Future<void> selectRecipe(Recipe recipe) async {

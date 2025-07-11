@@ -156,6 +156,16 @@ class _BrewyNavScaffoldState extends State<BrewyNavScaffold> {
           setState(() {
             _selectedIndex = index;
           });
+          // Refresh brew page data when switching to it
+          if (index == 1) {
+            final brewViewModel = context.read<BrewViewModel>();
+            brewViewModel.refreshRecipes();
+          }
+          // Refresh recipes page data when switching to it
+          if (index == 0) {
+            // We'll need to access the recipes page view model
+            // This will be handled by the page itself
+          }
         },
         backgroundColor: const Color(0xFF18181B),
         indicatorColor: Colors.white10,

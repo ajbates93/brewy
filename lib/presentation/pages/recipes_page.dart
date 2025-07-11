@@ -5,8 +5,34 @@ import '../../domain/entities/recipe.dart';
 import '../viewmodels/recipe_list_viewmodel.dart';
 import 'recipe_detail_page.dart';
 
-class RecipesPage extends StatelessWidget {
+class RecipesPage extends StatefulWidget {
   const RecipesPage({super.key});
+
+  @override
+  State<RecipesPage> createState() => _RecipesPageState();
+}
+
+class _RecipesPageState extends State<RecipesPage> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh data when app becomes visible
+      final viewModel = context.read<RecipeListViewModel>();
+      viewModel.loadRecipes();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

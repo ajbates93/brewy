@@ -29,12 +29,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<Recipe?> getRecipe(int id) async {
-    return await recipeDao.getRecipe(id);
+    final recipeModel = await recipeDao.getRecipe(id);
+    return recipeModel; // RecipeModel extends Recipe, so this should work
   }
 
   @override
   Future<List<Recipe>> getAllRecipes() async {
-    return await recipeDao.getAllRecipes();
+    final recipeModels = await recipeDao.getAllRecipes();
+    return recipeModels; // List<RecipeModel> should be assignable to List<Recipe>
   }
 
   @override
@@ -70,12 +72,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<RecipeStep?> getStep(int id) async {
-    return await stepDao.getStep(id);
+    final stepModel = await stepDao.getStep(id);
+    return stepModel; // RecipeStepModel extends RecipeStep, so this should work
   }
 
   @override
   Future<List<RecipeStep>> getStepsForRecipe(int recipeId) async {
-    return await stepDao.getStepsForRecipe(recipeId);
+    final stepModels = await stepDao.getStepsForRecipe(recipeId);
+    return stepModels; // List<RecipeStepModel> should be assignable to List<RecipeStep>
   }
 
   @override

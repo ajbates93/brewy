@@ -19,6 +19,11 @@ class _BrewPageState extends State<BrewPage> {
   bool _isRunning = false;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
