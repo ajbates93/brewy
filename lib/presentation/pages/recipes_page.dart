@@ -44,40 +44,46 @@ class RecipesPage extends StatelessWidget {
                         const Divider(height: 1, color: Colors.white12),
                     itemBuilder: (context, index) {
                       final recipe = viewModel.recipes[index];
-                      return ListTile(
-                        title: Text(
-                          recipe.name,
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                          ),
+                      return Dismissible(
+                        key: Key(recipe.id.toString()),
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20.0),
+                          child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        subtitle:
-                            recipe.description != null &&
-                                recipe.description!.isNotEmpty
-                            ? Text(
-                                recipe.description!,
-                                style: GoogleFonts.inter(color: Colors.white54),
-                              )
-                            : null,
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.redAccent,
+                        direction: DismissDirection.endToStart,
+                        onDismissed: (direction) async {
+                          await viewModel.deleteRecipe(recipe.id!);
+                        },
+                        child: ListTile(
+                          title: Text(
+                            recipe.name,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
                           ),
-                          onPressed: () async {
-                            await viewModel.deleteRecipe(recipe.id!);
+                          subtitle:
+                              recipe.description != null &&
+                                  recipe.description!.isNotEmpty
+                              ? Text(
+                                  recipe.description!,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white54,
+                                  ),
+                                )
+                              : null,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    RecipeDetailPage(recipeId: recipe.id!),
+                              ),
+                            );
                           },
                         ),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  RecipeDetailPage(recipeId: recipe.id!),
-                            ),
-                          );
-                        },
                       );
                     },
                   ),
@@ -101,13 +107,26 @@ class RecipesPage extends StatelessWidget {
                     ),
                     child: _AddRecipeForm(
                       viewModel: viewModel,
-                      onAdd: (name, description) async {
-                        await viewModel.addRecipe(
-                          Recipe(name: name, description: description),
-                        );
-                        Navigator.of(context).pop();
-                        // TODO: Navigate to detail page for new recipe
-                      },
+                      onAdd:
+                          (
+                            name,
+                            description,
+                            coffeeAmount,
+                            waterAmount,
+                            useMl,
+                          ) async {
+                            await viewModel.addRecipe(
+                              Recipe(
+                                name: name,
+                                description: description,
+                                coffeeAmount: coffeeAmount,
+                                waterAmount: waterAmount,
+                                useMl: useMl,
+                              ),
+                            );
+                            Navigator.of(context).pop();
+                            // TODO: Navigate to detail page for new recipe
+                          },
                     ),
                   ),
                 );
@@ -124,7 +143,14 @@ class RecipesPage extends StatelessWidget {
 }
 
 class _AddRecipeForm extends StatefulWidget {
-  final Future<void> Function(String name, String? description) onAdd;
+  final Future<void> Function(
+    String name,
+    String? description,
+    double? coffeeAmount,
+    double? waterAmount,
+    bool useMl,
+  )
+  onAdd;
   final RecipeListViewModel viewModel;
   const _AddRecipeForm({required this.onAdd, required this.viewModel});
 
@@ -136,6 +162,9 @@ class _AddRecipeFormState extends State<_AddRecipeForm> {
   final _formKey = GlobalKey<FormState>();
   String _name = '';
   String? _description;
+  double? _coffeeAmount;
+  double? _waterAmount;
+  bool _useMl = false;
   bool _isSubmitting = false;
 
   @override
@@ -157,6 +186,7 @@ class _AddRecipeFormState extends State<_AddRecipeForm> {
           ),
           const SizedBox(height: 24),
           TextFormField(
+            textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
               labelText: 'Recipe Name',
               labelStyle: TextStyle(color: Colors.white70),
@@ -173,6 +203,7 @@ class _AddRecipeFormState extends State<_AddRecipeForm> {
           ),
           const SizedBox(height: 16),
           TextFormField(
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               labelText: 'Description (optional)',
               labelStyle: TextStyle(color: Colors.white70),
@@ -183,6 +214,97 @@ class _AddRecipeFormState extends State<_AddRecipeForm> {
             ),
             style: const TextStyle(color: Colors.white),
             onChanged: (value) => setState(() => _description = value),
+          ),
+          const SizedBox(height: 16),
+
+          // Unit Toggle
+          Row(
+            children: [
+              Text(
+                'Unit: ',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(width: 16),
+              ChoiceChip(
+                label: const Text('Grams'),
+                selected: !_useMl,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() => _useMl = false);
+                  }
+                },
+                selectedColor: Colors.white,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                labelStyle: TextStyle(
+                  color: !_useMl ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: const Text('ml'),
+                selected: _useMl,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() => _useMl = true);
+                  }
+                },
+                selectedColor: Colors.white,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                labelStyle: TextStyle(
+                  color: _useMl ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Coffee Amount
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Coffee Amount (${_useMl ? 'ml' : 'g'})',
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: const OutlineInputBorder(),
+              focusedBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              prefixIcon: Icon(
+                Icons.coffee,
+                color: Colors.orange[300],
+                size: 20,
+              ),
+            ),
+            style: const TextStyle(color: Colors.white),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (value) {
+              final amount = double.tryParse(value);
+              setState(() => _coffeeAmount = amount);
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Water Amount
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Water Amount (${_useMl ? 'ml' : 'g'})',
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: const OutlineInputBorder(),
+              focusedBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              prefixIcon: Icon(
+                Icons.water_drop,
+                color: Colors.blue[300],
+                size: 20,
+              ),
+            ),
+            style: const TextStyle(color: Colors.white),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (value) {
+              final amount = double.tryParse(value);
+              setState(() => _waterAmount = amount);
+            },
           ),
           const SizedBox(height: 24),
           ElevatedButton(
@@ -197,6 +319,9 @@ class _AddRecipeFormState extends State<_AddRecipeForm> {
                           _description?.trim().isEmpty ?? true
                               ? null
                               : _description?.trim(),
+                          _coffeeAmount,
+                          _waterAmount,
+                          _useMl,
                         );
                         debugPrint('Recipe added successfully');
                       } catch (e, stack) {

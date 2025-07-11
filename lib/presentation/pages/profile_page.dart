@@ -299,6 +299,7 @@ class _ProfileEditFormState extends State<_ProfileEditForm> {
           const SizedBox(height: 24),
           TextFormField(
             initialValue: _name,
+            textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
               labelText: 'Name',
               labelStyle: TextStyle(color: Colors.white70),
@@ -316,6 +317,7 @@ class _ProfileEditFormState extends State<_ProfileEditForm> {
           const SizedBox(height: 16),
           TextFormField(
             initialValue: _bio,
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               labelText: 'Bio',
               labelStyle: TextStyle(color: Colors.white70),

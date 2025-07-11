@@ -111,118 +111,117 @@ class _BrewPageState extends State<BrewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => BrewViewModel()..loadRecipes(),
-      child: Consumer<BrewViewModel>(
-        builder: (context, viewModel, child) {
-          final recipe = viewModel.selectedRecipe;
-          final steps = viewModel.steps;
-          final accent = Colors.white;
-          final secondary = const Color(0xFF27272A);
+    return Consumer<BrewViewModel>(
+      builder: (context, viewModel, child) {
+        final recipe = viewModel.selectedRecipe;
+        final steps = viewModel.steps;
+        final accent = Colors.white;
+        final secondary = const Color(0xFF27272A);
 
-          // Step logic (same as before, but using steps from viewModel)
-          RecipeStep? getCurrentStep() {
-            RecipeStep? current;
-            for (final step in steps) {
-              if (_seconds >= step.startTime &&
-                  (_seconds <= (step.endTime ?? 99999))) {
-                if (current == null || step.startTime >= current.startTime) {
-                  current = step;
-                }
+        // Step logic (same as before, but using steps from viewModel)
+        RecipeStep? getCurrentStep() {
+          RecipeStep? current;
+          for (final step in steps) {
+            if (_seconds >= step.startTime &&
+                (_seconds <= (step.endTime ?? 99999))) {
+              if (current == null || step.startTime >= current.startTime) {
+                current = step;
               }
             }
-            if (current == null &&
-                steps.isNotEmpty &&
-                _seconds > (steps.last.endTime ?? 99999))
-              return steps.last;
-            return current ?? (steps.isNotEmpty ? steps.first : null);
           }
+          if (current == null &&
+              steps.isNotEmpty &&
+              _seconds > (steps.last.endTime ?? 99999))
+            return steps.last;
+          return current ?? (steps.isNotEmpty ? steps.first : null);
+        }
 
-          RecipeStep? getNextStep() {
-            final now = _seconds;
-            final futureSteps = steps.where((s) => s.startTime > now).toList();
-            if (futureSteps.isNotEmpty) {
-              futureSteps.sort((a, b) => a.startTime.compareTo(b.startTime));
-              return futureSteps.first;
-            }
-            return null;
+        RecipeStep? getNextStep() {
+          final now = _seconds;
+          final futureSteps = steps.where((s) => s.startTime > now).toList();
+          if (futureSteps.isNotEmpty) {
+            futureSteps.sort((a, b) => a.startTime.compareTo(b.startTime));
+            return futureSteps.first;
           }
+          return null;
+        }
 
-          final currentStep = getCurrentStep();
-          final nextStep = getNextStep();
+        final currentStep = getCurrentStep();
+        final nextStep = getNextStep();
 
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              title: recipe == null
-                  ? Text(
-                      'Brewy',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 28,
-                        color: accent,
-                        letterSpacing: 1.2,
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        PopupMenuButton<Recipe>(
-                          initialValue: recipe,
-                          onSelected: (selected) async {
-                            await viewModel.selectRecipe(selected);
-                            setState(() {
-                              _seconds = 0;
-                              _isRunning = false;
-                            });
-                          },
-                          itemBuilder: (context) => viewModel.recipes
-                              .map(
-                                (r) => PopupMenuItem(
-                                  value: r,
-                                  child: Text(
-                                    r.name,
-                                    style: GoogleFonts.inter(),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          child: Row(
-                            children: [
-                              Text(
-                                recipe.name,
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 28,
-                                  color: accent,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.white,
-                                size: 32,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: recipe == null
+                ? Text(
+                    'Brewy',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 28,
+                      color: accent,
+                      letterSpacing: 1.2,
                     ),
-              centerTitle: true,
-            ),
-            body: viewModel.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : recipe == null
-                ? _buildNoRecipesView(context)
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (_seconds == 0 && !_isRunning) ...[
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 32.0),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PopupMenuButton<Recipe>(
+                        initialValue: recipe,
+                        onSelected: (selected) async {
+                          await viewModel.selectRecipe(selected);
+                          setState(() {
+                            _seconds = 0;
+                            _isRunning = false;
+                          });
+                        },
+                        itemBuilder: (context) => viewModel.recipes
+                            .map(
+                              (r) => PopupMenuItem(
+                                value: r,
+                                child: Text(r.name, style: GoogleFonts.inter()),
+                              ),
+                            )
+                            .toList(),
+                        child: Row(
+                          children: [
+                            Text(
+                              recipe.name,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 28,
+                                color: accent,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.arrow_drop_down,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+            centerTitle: true,
+          ),
+          body: viewModel.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : recipe == null
+              ? _buildNoRecipesView(context)
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_seconds == 0 && !_isRunning) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 32.0),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                            ),
                             child: Column(
                               children: [
                                 Text(
@@ -262,156 +261,154 @@ class _BrewPageState extends State<BrewPage> {
                               ],
                             ),
                           ),
-                        ] else ...[
-                          if (currentStep != null) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12.0),
-                              child: Text(
-                                currentStep.description,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: accent,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                          ],
-                        ],
-                        GestureDetector(
-                          onTap: _isRunning ? _stopTimer : _startTimer,
-                          child: Container(
-                            width: 340,
-                            padding: const EdgeInsets.all(48),
-                            decoration: BoxDecoration(
-                              color: secondary,
-                              borderRadius: BorderRadius.circular(32),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
+                        ),
+                      ] else ...[
+                        if (currentStep != null) ...[
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
                             child: Text(
-                              _formatTime(_seconds),
+                              currentStep.description,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
-                                fontSize: 72,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: accent,
-                                letterSpacing: 2,
                               ),
                             ),
                           ),
-                        ),
-                        if (nextStep != null) ...[
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: 24.0,
-                              bottom: 24.0,
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Up next at ${_formatTime(nextStep.startTime)}',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: accent.withOpacity(0.5),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  nextStep.description,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    color: accent.withOpacity(0.35),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ] else ...[
-                          const SizedBox(height: 48),
+                          const SizedBox(height: 24),
                         ],
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: _isRunning ? _stopTimer : _startTimer,
-                              icon: Icon(
-                                _isRunning ? Icons.pause : Icons.play_arrow,
-                                color: secondary,
+                      ],
+                      GestureDetector(
+                        onTap: _isRunning ? _stopTimer : _startTimer,
+                        child: Container(
+                          width: 340,
+                          padding: const EdgeInsets.all(48),
+                          decoration: BoxDecoration(
+                            color: secondary,
+                            borderRadius: BorderRadius.circular(32),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 24,
+                                offset: const Offset(0, 8),
                               ),
-                              label: Text(
-                                _isRunning ? 'Pause' : 'Start',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  color: secondary,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: accent,
-                                foregroundColor: secondary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
+                            ],
+                          ),
+                          child: Text(
+                            _formatTime(_seconds),
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 72,
+                              fontWeight: FontWeight.bold,
+                              color: accent,
+                              letterSpacing: 2,
                             ),
-                            const SizedBox(width: 24),
-                            ElevatedButton.icon(
-                              onPressed: _resetTimer,
-                              icon: Icon(Icons.refresh, color: accent),
-                              label: Text(
-                                'Reset',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  color: accent,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: secondary,
-                                foregroundColor: accent,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 40),
-                        Text(
-                          _isRunning
-                              ? 'Brewing in progress...'
-                              : 'Ready to brew',
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                      ),
+                      if (nextStep != null && (_isRunning || _seconds > 0)) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: 24.0,
+                            bottom: 24.0,
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Up next at ${_formatTime(nextStep.startTime)}',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: accent.withOpacity(0.5),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                nextStep.description,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: accent.withOpacity(0.35),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        const SizedBox(height: 48),
                       ],
-                    ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _isRunning ? _stopTimer : _startTimer,
+                            icon: Icon(
+                              _isRunning ? Icons.pause : Icons.play_arrow,
+                              color: secondary,
+                            ),
+                            label: Text(
+                              _isRunning ? 'Pause' : 'Start',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                                color: secondary,
+                                fontSize: 18,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: accent,
+                              foregroundColor: secondary,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          ElevatedButton.icon(
+                            onPressed: _resetTimer,
+                            icon: Icon(Icons.refresh, color: accent),
+                            label: Text(
+                              'Reset',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                                color: accent,
+                                fontSize: 18,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: secondary,
+                              foregroundColor: accent,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                      Text(
+                        _isRunning ? 'Brewing in progress...' : 'Ready to brew',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-          );
-        },
-      ),
+                ),
+        );
+      },
     );
   }
 }

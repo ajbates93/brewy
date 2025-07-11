@@ -233,110 +233,94 @@ class RecipeDetailPage extends StatelessWidget {
                                   ),
                                   itemBuilder: (context, index) {
                                     final step = viewModel.steps[index];
-                                    return ListTile(
-                                      title: Text(
-                                        step.description,
-                                        style: GoogleFonts.inter(
+                                    return Dismissible(
+                                      key: Key(step.id.toString()),
+                                      background: Container(
+                                        color: Colors.red,
+                                        alignment: Alignment.centerRight,
+                                        padding: const EdgeInsets.only(
+                                          right: 20.0,
+                                        ),
+                                        child: const Icon(
+                                          Icons.delete,
                                           color: Colors.white,
-                                          fontSize: 16,
                                         ),
                                       ),
-                                      subtitle: Text(
-                                        'Start: ${step.startTime}s  End: ${step.endTime?.toString() ?? '—'}s',
-                                        style: GoogleFonts.inter(
-                                          color: Colors.white54,
-                                          fontSize: 14,
+                                      direction: DismissDirection.endToStart,
+                                      onDismissed: (direction) async {
+                                        await viewModel.deleteStep(step.id!);
+                                      },
+                                      child: ListTile(
+                                        title: Text(
+                                          step.description,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                          ),
                                         ),
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.edit,
-                                              color: Colors.white70,
+                                        subtitle: Text(
+                                          '${_formatStepTime(step.startTime)}${step.endTime != null ? ' - ${_formatStepTime(step.endTime!)}' : ''}',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white54,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          await showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: const Color(
+                                              0xFF232326,
                                             ),
-                                            onPressed: () async {
-                                              await showModalBottomSheet(
-                                                context: context,
-                                                isScrollControlled: true,
-                                                backgroundColor: const Color(
-                                                  0xFF232326,
-                                                ),
-                                                shape:
-                                                    const RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.vertical(
-                                                            top:
-                                                                Radius.circular(
-                                                                  24,
-                                                                ),
-                                                          ),
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                    top: Radius.circular(24),
+                                                  ),
+                                            ),
+                                            builder: (context) => Padding(
+                                              padding: EdgeInsets.only(
+                                                left: 24,
+                                                right: 24,
+                                                top: 24,
+                                                bottom:
+                                                    MediaQuery.of(
+                                                      context,
+                                                    ).viewInsets.bottom +
+                                                    24,
+                                              ),
+                                              child: _EditStepForm(
+                                                initialStartTime:
+                                                    _formatStepTime(
+                                                      step.startTime,
                                                     ),
-                                                builder: (context) => Padding(
-                                                  padding: EdgeInsets.only(
-                                                    left: 24,
-                                                    right: 24,
-                                                    top: 24,
-                                                    bottom:
-                                                        MediaQuery.of(
-                                                          context,
-                                                        ).viewInsets.bottom +
-                                                        24,
-                                                  ),
-                                                  child: _EditStepForm(
-                                                    initialStartTime:
-                                                        _formatStepTime(
-                                                          step.startTime,
-                                                        ),
-                                                    initialEndTime:
-                                                        step.endTime != null
-                                                        ? _formatStepTime(
-                                                            step.endTime!,
-                                                          )
-                                                        : '',
-                                                    initialDescription:
-                                                        step.description,
-                                                    onSave:
-                                                        (
-                                                          start,
-                                                          end,
-                                                          desc,
-                                                        ) async {
-                                                          await viewModel
-                                                              .updateStep(
-                                                                RecipeStep(
-                                                                  id: step.id,
-                                                                  recipeId: step
-                                                                      .recipeId,
-                                                                  startTime:
-                                                                      start,
-                                                                  endTime: end,
-                                                                  description:
-                                                                      desc,
-                                                                ),
-                                                              );
-                                                          Navigator.of(
-                                                            context,
-                                                          ).pop();
-                                                        },
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              color: Colors.redAccent,
+                                                initialEndTime:
+                                                    step.endTime != null
+                                                    ? _formatStepTime(
+                                                        step.endTime!,
+                                                      )
+                                                    : '',
+                                                initialDescription:
+                                                    step.description,
+                                                onSave:
+                                                    (start, end, desc) async {
+                                                      await viewModel
+                                                          .updateStep(
+                                                            step.copyWith(
+                                                              startTime: start,
+                                                              endTime: end,
+                                                              description: desc,
+                                                            ),
+                                                          );
+                                                      Navigator.of(
+                                                        context,
+                                                      ).pop();
+                                                    },
+                                              ),
                                             ),
-                                            onPressed: () async {
-                                              await viewModel.deleteStep(
-                                                step.id!,
-                                              );
-                                            },
-                                          ),
-                                        ],
+                                          );
+                                        },
                                       ),
                                     );
                                   },
@@ -426,7 +410,6 @@ class _AddStepForm extends StatefulWidget {
 class _AddStepFormState extends State<_AddStepForm> {
   final _formKey = GlobalKey<FormState>();
   String _startTimeStr = '';
-  String _endTimeStr = '';
   int? _startTime;
   int? _endTime;
   String _description = '';
@@ -519,12 +502,12 @@ class _AddStepFormState extends State<_AddStepForm> {
             style: const TextStyle(color: Colors.white),
             keyboardType: TextInputType.text,
             onChanged: (value) => setState(() {
-              _endTimeStr = value;
               _endTime = _parseTime(value);
             }),
           ),
           const SizedBox(height: 16),
           TextFormField(
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               labelText: 'Description',
               labelStyle: TextStyle(color: Colors.white70),
@@ -656,6 +639,7 @@ class _EditRecipeFormState extends State<_EditRecipeForm> {
           const SizedBox(height: 24),
           TextFormField(
             initialValue: _name,
+            textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
               labelText: 'Recipe Name',
               labelStyle: TextStyle(color: Colors.white70),
@@ -673,6 +657,7 @@ class _EditRecipeFormState extends State<_EditRecipeForm> {
           const SizedBox(height: 16),
           TextFormField(
             initialValue: _description,
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               labelText: 'Description (optional)',
               labelStyle: TextStyle(color: Colors.white70),
@@ -953,13 +938,13 @@ class _EditStepFormState extends State<_EditStepForm> {
             style: const TextStyle(color: Colors.white),
             keyboardType: TextInputType.text,
             onChanged: (value) => setState(() {
-              _endTimeStr = value;
               _endTime = _parseTime(value);
             }),
           ),
           const SizedBox(height: 16),
           TextFormField(
             initialValue: _description,
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               labelText: 'Description',
               labelStyle: TextStyle(color: Colors.white70),

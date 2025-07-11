@@ -6,6 +6,7 @@ import 'presentation/pages/recipes_page.dart';
 import 'presentation/pages/brew_page.dart';
 import 'presentation/pages/profile_page.dart';
 import 'presentation/viewmodels/profile_viewmodel.dart';
+import 'presentation/viewmodels/brew_viewmodel.dart';
 import 'data/repositories/profile_repository_impl.dart';
 import 'data/dao/profile_dao.dart';
 import 'data/datasources/database_helper.dart';
@@ -119,7 +120,10 @@ class BrewyApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        home: const BrewyNavScaffold(),
+        home: ChangeNotifierProvider(
+          create: (_) => BrewViewModel()..loadRecipes(),
+          child: const BrewyNavScaffold(),
+        ),
         debugShowCheckedModeBanner: false,
       ),
     );

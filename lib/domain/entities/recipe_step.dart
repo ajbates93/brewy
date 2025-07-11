@@ -12,4 +12,20 @@ class RecipeStep {
     this.endTime,
     required this.description,
   });
+
+  RecipeStep copyWith({
+    int? id,
+    int? recipeId,
+    int? startTime,
+    int? endTime,
+    String? description,
+  }) {
+    return RecipeStep(
+      id: id ?? this.id,
+      recipeId: recipeId ?? this.recipeId,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      description: description ?? this.description,
+    );
+  }
 }
