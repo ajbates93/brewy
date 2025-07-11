@@ -91,6 +91,16 @@ class _RecipesPageState extends State<RecipesPage> with WidgetsBindingObserver {
                               fontSize: 18,
                             ),
                           ),
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    RecipeDetailPage(recipeId: recipe.id!),
+                              ),
+                            );
+                            // After returning from detail, reload recipes
+                            await viewModel.loadRecipes();
+                          },
                           subtitle:
                               recipe.description != null &&
                                   recipe.description!.isNotEmpty
@@ -99,16 +109,10 @@ class _RecipesPageState extends State<RecipesPage> with WidgetsBindingObserver {
                                   style: GoogleFonts.inter(
                                     color: Colors.white54,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 )
                               : null,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    RecipeDetailPage(recipeId: recipe.id!),
-                              ),
-                            );
-                          },
                         ),
                       );
                     },

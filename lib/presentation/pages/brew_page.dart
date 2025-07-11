@@ -251,6 +251,8 @@ class _BrewPageState extends State<BrewPage> {
                                         color: Colors.white70,
                                         fontWeight: FontWeight.w500,
                                       ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 const SizedBox(height: 12),
